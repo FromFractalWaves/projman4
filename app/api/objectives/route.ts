@@ -1,3 +1,4 @@
+// app/api/objectives/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
@@ -11,8 +12,9 @@ export async function GET() {
     return NextResponse.json(objectives)
   } catch (error) {
     console.error('Error fetching objectives:', error)
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
     return NextResponse.json(
-      { error: 'Failed to fetch objectives', details: error.message },
+      { error: 'Failed to fetch objectives', details: errorMessage },
       { status: 500 }
     )
   }
@@ -39,8 +41,9 @@ export async function POST(request: Request) {
     return NextResponse.json(objective)
   } catch (error) {
     console.error('Error creating objective:', error)
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred'
     return NextResponse.json(
-      { error: 'Failed to create objective', details: error.message },
+      { error: 'Failed to create objective', details: errorMessage },
       { status: 500 }
     )
   }
