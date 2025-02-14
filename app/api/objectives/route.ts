@@ -1,15 +1,16 @@
+// app/api/objectives/route.ts
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    const tasks = await prisma.task.findMany({
+    const objectives = await prisma.objective.findMany({
       orderBy: { createdAt: 'desc' }
     })
-    return NextResponse.json(tasks)
+    return NextResponse.json(objectives)
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to fetch tasks' },
+      { error: 'Failed to fetch objectives' },
       { status: 500 }
     )
   }
@@ -18,14 +19,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const json = await request.json()
-    const task = await prisma.task.create({
+    const objective = await prisma.objective.create({
       data: json
     })
-    return NextResponse.json(task)
+    return NextResponse.json(objective)
   } catch (error) {
     return NextResponse.json(
-      { error: 'Failed to create task' },
+      { error: 'Failed to create objective' },
       { status: 500 }
     )
   }
 }
+

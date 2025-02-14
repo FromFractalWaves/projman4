@@ -1,3 +1,4 @@
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,18 +8,15 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Objective {
+model Task {
   id          String   @id @default(cuid())
   title       String
   description String
   status      Status   @default(todo)
-  dueDate     DateTime?
-  priority    Priority @default(medium)
-  progress    Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  @@map("objectives")
+  @@map("tasks")
 }
 
 enum Status {
@@ -27,13 +25,4 @@ enum Status {
   completed
 
   @@map("status")
-}
-
-enum Priority {
-  low
-  medium
-  high
-  critical
-
-  @@map("priority")
 }
