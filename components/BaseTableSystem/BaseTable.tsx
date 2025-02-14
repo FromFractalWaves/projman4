@@ -17,6 +17,36 @@ import { Label } from "@/components/ui/label";
 import { BaseTableActionPopover } from "./BaseTableActionPopover";
 import { BaseTableItem, BaseTableProps } from "@/types/BaseTableTypes";
 
+// Map frontend display values to Prisma enum values
+const normalizeStatus = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'in progress':
+      return 'in_progress';
+    case 'in-progress':
+      return 'in_progress';
+    case 'todo':
+      return 'todo';
+    case 'completed':
+      return 'completed';
+    default:
+      return status;
+  }
+};
+
+// Map Prisma enum values to frontend display values
+const denormalizeStatus = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'in_progress':
+      return 'In Progress';
+    case 'todo':
+      return 'Todo';
+    case 'completed':
+      return 'Completed';
+    default:
+      return status;
+  }
+};
+
 export function BaseTable<T extends BaseTableItem>({
   data,
   columns,
@@ -51,18 +81,27 @@ export function BaseTable<T extends BaseTableItem>({
     
     const value = item[accessorKey];
     
+    // Handle status specially
+    if (accessorKey === 'status') {
+      return denormalizeStatus(String(value));
+    }
+    
     // Handle dates
-    if (value && typeof value === 'object' && 'toLocaleDateString' in value) {
+    if (value instanceof Date) {
       return value.toLocaleDateString();
     }
     
-    // Handle other types
     return String(value);
   };
 
   const handleAddNew = () => {
     if (addNewItem) {
-      addNewItem(newItem as T);
+      // Normalize the status before sending to the API
+      const normalizedItem = {
+        ...newItem,
+        status: newItem.status ? normalizeStatus(String(newItem.status)) : 'todo'
+      };
+      addNewItem(normalizedItem as T);
       setNewItem(defaultNewItem || {});
       setIsAddingNew(false);
     }
@@ -77,15 +116,15 @@ export function BaseTable<T extends BaseTableItem>({
       return (
         <div key={key} className="grid gap-2">
           <Label htmlFor={key} className="capitalize">{key}</Label>
-          {'status' in newItem && key === 'status' ? (
+          {key === 'status' ? (
             <select
               id={key}
               className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background"
-              value={String(newItem[key] || '')}
+              value={String(newItem[key] || 'todo')}
               onChange={(e) => setNewItem({...newItem, [key]: e.target.value})}
             >
               <option value="todo">Todo</option>
-              <option value="in-progress">In Progress</option>
+              <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
           ) : (

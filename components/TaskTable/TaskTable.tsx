@@ -1,3 +1,4 @@
+// components/TaskTable/TaskTable.tsx
 import { useEffect } from 'react';
 import { BaseTable } from '../BaseTableSystem/BaseTable';
 import { Task } from '@prisma/client';
@@ -7,8 +8,14 @@ export function TaskTable() {
   const { tasks, fetchTasks, updateTask, deleteTask, addTask, isLoading } = useTaskStore();
 
   useEffect(() => {
+    console.log('TaskTable mounted');
     fetchTasks();
   }, [fetchTasks]);
+
+  // Add logging to see when tasks change
+  useEffect(() => {
+    console.log('Current tasks:', tasks);
+  }, [tasks]);
 
   const columns = [
     { 
@@ -47,27 +54,40 @@ export function TaskTable() {
   const actions = [
     {
       label: 'Modify',
-      action: (task: Task) => updateTask(task.id, task),
+      action: (task: Task) => {
+        console.log('Modifying task:', task);
+        updateTask(task.id, task);
+      },
       variant: 'default' as const
     },
     {
       label: 'Mark In Progress',
-      action: (task: Task) => updateTask(task.id, { status: 'in_progress' }),
+      action: (task: Task) => {
+        console.log('Marking task in progress:', task.id);
+        updateTask(task.id, { status: 'in_progress' });
+      },
       variant: 'default' as const
     },
     {
       label: 'Mark Complete',
-      action: (task: Task) => updateTask(task.id, { status: 'completed' }),
+      action: (task: Task) => {
+        console.log('Marking task complete:', task.id);
+        updateTask(task.id, { status: 'completed' });
+      },
       variant: 'default' as const
     },
     {
       label: 'Delete',
-      action: (task: Task) => deleteTask(task.id),
+      action: (task: Task) => {
+        console.log('Deleting task:', task.id);
+        deleteTask(task.id);
+      },
       variant: 'destructive' as const
     }
   ];
 
   const handleAddNewTask = (taskData: Partial<Task>) => {
+    console.log('Adding new task:', taskData);
     addTask({
       title: taskData.title || '',
       description: taskData.description || '',
@@ -82,9 +102,11 @@ export function TaskTable() {
   };
 
   if (isLoading) {
+    console.log('Table is loading');
     return <div>Loading...</div>;
   }
 
+  console.log('Rendering table with tasks:', tasks);
   return (
     <BaseTable<Task>
       data={tasks}

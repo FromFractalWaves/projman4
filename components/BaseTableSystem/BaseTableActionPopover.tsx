@@ -22,6 +22,22 @@ interface BaseTableActionPopoverProps<T extends BaseTableItem> {
   actions: ActionConfig<T>[];
 }
 
+// Normalize status values for API
+const normalizeStatus = (status: string) => {
+  switch (status.toLowerCase()) {
+    case 'in progress':
+      return 'in_progress';
+    case 'in-progress':
+      return 'in_progress';
+    case 'todo':
+      return 'todo';
+    case 'completed':
+      return 'completed';
+    default:
+      return status;
+  }
+};
+
 export function BaseTableActionPopover<T extends BaseTableItem>({
   item,
   actions,
@@ -29,38 +45,55 @@ export function BaseTableActionPopover<T extends BaseTableItem>({
   const [isModifying, setIsModifying] = React.useState(false);
   const [modifiedItem, setModifiedItem] = React.useState<T>({...item});
 
+  // Reset modified item when dialog opens/closes
+  React.useEffect(() => {
+    if (isModifying) {
+      setModifiedItem({...item});
+    }
+  }, [isModifying, item]);
+
   const handleModify = () => {
     const modifyAction = actions.find(action => action.label === 'Modify');
     if (modifyAction) {
-      modifyAction.action(modifiedItem);
+      // Normalize the status before sending to the API
+      const normalizedItem = {
+        ...modifiedItem,
+        status: modifiedItem.status ? normalizeStatus(String(modifiedItem.status)) : undefined
+      };
+      modifyAction.action(normalizedItem);
       setIsModifying(false);
     }
   };
 
+  const handleClose = () => {
+    setIsModifying(false);
+    setModifiedItem({...item}); // Reset to original values
+  };
+
   const renderModifyFields = () => {
-    return Object.entries(item).map(([key, value]) => {
+    return Object.entries(item).map(([key, _]) => {
       // Skip internal fields
       if (['id', 'createdAt', 'updatedAt'].includes(key)) return null;
 
       return (
         <div key={key} className="grid gap-2">
           <Label htmlFor={key} className="capitalize">{key}</Label>
-          {'status' in item && key === 'status' ? (
+          {key === 'status' ? (
             <select
               id={key}
               className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background"
-              value={String(modifiedItem[key])}
+              value={String(modifiedItem[key] || '')}
               onChange={(e) => setModifiedItem({...modifiedItem, [key]: e.target.value})}
             >
               <option value="todo">Todo</option>
-              <option value="in-progress">In Progress</option>
+              <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
           ) : (
             <Input
               id={key}
               type="text"
-              value={String(value)}
+              value={String(modifiedItem[key] || '')}
               onChange={(e) => setModifiedItem({...modifiedItem, [key]: e.target.value})}
             />
           )}
@@ -89,6 +122,10 @@ export function BaseTableActionPopover<T extends BaseTableItem>({
                   onClick={() => {
                     if (action.label === 'Modify') {
                       setIsModifying(true);
+                    } else if (action.label === 'Mark In Progress') {
+                      action.action({ ...item, status: 'in_progress' } as T);
+                    } else if (action.label === 'Mark Complete') {
+                      action.action({ ...item, status: 'completed' } as T);
                     } else {
                       action.action(item);
                     }
@@ -108,7 +145,7 @@ export function BaseTableActionPopover<T extends BaseTableItem>({
             {renderModifyFields()}
           </div>
           <div className="flex justify-end gap-4">
-            <Button variant="outline" onClick={() => setIsModifying(false)}>
+            <Button variant="outline" onClick={handleClose}>
               Cancel
             </Button>
             <Button onClick={handleModify}>
