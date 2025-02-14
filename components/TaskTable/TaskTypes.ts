@@ -1,5 +1,5 @@
 // app/components/TaskTable/TaskTypes.ts
-import { BaseItem } from '../DataTableControlGroup/types'
+import { BaseItem } from '@/types/DataTableTypes';
 
 export interface Task extends BaseItem {
   title: string;

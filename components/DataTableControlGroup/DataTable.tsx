@@ -31,6 +31,22 @@ export function DataTable<T extends BaseItem>({
     },
   ]
 
+  const formatCellValue = (item: T, accessorKey: keyof T | 'actions'): string => {
+    if (accessorKey === 'actions') return '';
+    
+    const value = item[accessorKey];
+    
+    // Handle dates specifically
+    if (accessorKey === 'createdAt' || accessorKey === 'updatedAt') {
+      const dateValue = value as unknown as Date;
+      return dateValue instanceof Date 
+        ? dateValue.toLocaleDateString()
+        : new Date(dateValue).toLocaleDateString();
+    }
+    
+    return String(value);
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -60,9 +76,7 @@ export function DataTable<T extends BaseItem>({
                   <TableCell key={`${item.id}-${String(column.accessorKey)}`}>
                     {column.cell 
                       ? column.cell({ row: { original: item } })
-                      : column.accessorKey === 'createdAt' || column.accessorKey === 'updatedAt'
-                        ? new Date(item[column.accessorKey]).toLocaleDateString()
-                        : String(item[column.accessorKey as keyof T])}
+                      : formatCellValue(item, column.accessorKey)}
                   </TableCell>
                 ))}
               </TableRow>
