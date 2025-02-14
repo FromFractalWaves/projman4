@@ -1,41 +1,44 @@
 // components/TaskTable/TaskTable.tsx
-import React from 'react';
-import { DataTable } from '../DataTableControlGroup/DataTable';
+import { BaseTable } from '../BaseTableSystem/BaseTable';
 import { Task } from '@/types/task';
 import { useTaskStore } from '@/store/taskStore';
-import { ColumnConfig } from '@/types/DataTableTypes';
 
 export function TaskTable() {
   const { tasks, updateTask, deleteTask, addTask } = useTaskStore();
 
-  const columns: ColumnConfig<Task>[] = [
+  const columns = [
     { 
-      accessorKey: 'title',
+      accessorKey: 'title' as keyof Task,
       header: 'Title'
     },
     { 
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => (
-        <span className={
-          row.original.status === 'completed' ? 'text-green-600' :
-          row.original.status === 'in-progress' ? 'text-blue-600' :
-          'text-gray-600'
-        }>
-          {row.original.status}
-        </span>
-      )
+      accessorKey: 'status' as keyof Task,
+      header: 'Status'
     },
     { 
-      accessorKey: 'description',
+      accessorKey: 'description' as keyof Task,
       header: 'Description'
     },
     { 
-      accessorKey: 'updatedAt',
-      header: 'Last Updated',
-      cell: ({ row }) => new Date(row.original.updatedAt).toLocaleDateString()
+      accessorKey: 'updatedAt' as keyof Task,
+      header: 'Last Updated'
     }
   ];
+
+  const renderCustomCell = (item: Task, key: keyof Task) => {
+    if (key === 'status') {
+      return (
+        <span className={
+          item.status === 'completed' ? 'text-green-600' :
+          item.status === 'in-progress' ? 'text-blue-600' :
+          'text-gray-600'
+        }>
+          {item.status}
+        </span>
+      );
+    }
+    return null;
+  };
 
   const actions = [
     {
@@ -46,7 +49,7 @@ export function TaskTable() {
     {
       label: 'Mark In Progress',
       action: (task: Task) => updateTask(task.id, { status: 'in-progress' }),
-      variant: 'secondary' as const
+      variant: 'default' as const
     },
     {
       label: 'Mark Complete',
@@ -69,12 +72,13 @@ export function TaskTable() {
   };
 
   return (
-    <DataTable<Task>
+    <BaseTable<Task>
       data={tasks}
       columns={columns}
       actions={actions}
       title="Tasks"
       addNewItem={handleAddNewTask}
+      renderCustomCell={renderCustomCell}
     />
   );
 }

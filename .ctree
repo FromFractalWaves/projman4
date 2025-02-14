@@ -88,6 +88,104 @@ projman3-webui-new/
 │             )
 │           }
 ├── components/
+│   ├── BaseTableSystem/
+│   │   └── BaseTable.tsx
+│   │           
+│   │           // components/BaseTableSystem/BaseTable.tsx
+│   │           import React from 'react';
+│   │           import {
+│   │             Table,
+│   │             TableBody,
+│   │             TableCell,
+│   │             TableHead,
+│   │             TableHeader,
+│   │             TableRow,
+│   │           } from "@/components/ui/table";
+│   │           import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+│   │           import { Button } from "@/components/ui/button";
+│   │           import { Plus } from "lucide-react";
+│   │           import { BaseTableActionPopover } from "./BaseTableActionPopover";
+│   │           import { BaseTableItem, BaseTableProps } from "@/types/BaseTableTypes";
+│   │           
+│   │           export function BaseTable<T extends BaseTableItem>({
+│   │             data,
+│   │             columns,
+│   │             actions,
+│   │             title,
+│   │             addNewItem,
+│   │             renderCustomCell,
+│   │           }: BaseTableProps<T>) {
+│   │             const finalColumns = [
+│   │               ...columns,
+│   │               {
+│   │                 accessorKey: 'actions' as keyof T | 'actions',
+│   │                 header: '',
+│   │                 cell: ({ row }: { row: { original: T } }) => (
+│   │                   <BaseTableActionPopover item={row.original} actions={actions} />
+│   │                 ),
+│   │               },
+│   │             ];
+│   │           
+│   │             const formatCellValue = (item: T, accessorKey: keyof T | 'actions'): React.ReactNode => {
+│   │               if (accessorKey === 'actions') return '';
+│   │               
+│   │               // If there's a custom renderer for this cell, use it
+│   │               if (renderCustomCell) {
+│   │                 const customRendered = renderCustomCell(item, accessorKey as keyof T);
+│   │                 if (customRendered) return customRendered;
+│   │               }
+│   │               
+│   │               const value = item[accessorKey];
+│   │               
+│   │               // Handle dates
+│   │               if (value instanceof Date) {
+│   │                 return value.toLocaleDateString();
+│   │               }
+│   │               
+│   │               // Handle other types
+│   │               return String(value);
+│   │             };
+│   │           
+│   │             return (
+│   │               <Card>
+│   │                 <CardHeader className="flex flex-row items-center justify-between">
+│   │                   <CardTitle>{title}</CardTitle>
+│   │                   {addNewItem && (
+│   │                     <Button onClick={addNewItem} size="sm">
+│   │                       <Plus className="w-4 h-4 mr-2" />
+│   │                       Add New
+│   │                     </Button>
+│   │                   )}
+│   │                 </CardHeader>
+│   │                 <CardContent>
+│   │                   <Table>
+│   │                     <TableHeader>
+│   │                       <TableRow>
+│   │                         {finalColumns.map((column) => (
+│   │                           <TableHead key={String(column.accessorKey)}>
+│   │                             {column.header}
+│   │                           </TableHead>
+│   │                         ))}
+│   │                       </TableRow>
+│   │                     </TableHeader>
+│   │                     <TableBody>
+│   │                       {data.map((item: T) => (
+│   │                         <TableRow key={item.id}>
+│   │                           {finalColumns.map((column) => (
+│   │                             <TableCell key={`${item.id}-${String(column.accessorKey)}`}>
+│   │                               {column.cell 
+│   │                                 ? column.cell({ row: { original: item } })
+│   │                                 : formatCellValue(item, column.accessorKey)}
+│   │                             </TableCell>
+│   │                           ))}
+│   │                         </TableRow>
+│   │                       ))}
+│   │                     </TableBody>
+│   │                   </Table>
+│   │                 </CardContent>
+│   │               </Card>
+│   │             );
+│   │           }
 │   ├── DataTableControlGroup/
 │   │   ├── DataTable.tsx
 │   │   │       // components/DataTableControlGroup/DataTable.tsx
@@ -183,11 +281,20 @@ projman3-webui-new/
 │   │   │       // components/DataTableControlGroup/DataTableActionPopover.tsx
 │   │   │       import React from 'react';
 │   │   │       import {
+│   │   │         Dialog,
+│   │   │         DialogContent,
+│   │   │         DialogHeader,
+│   │   │         DialogTitle,
+│   │   │         DialogTrigger,
+│   │   │       } from "@/components/ui/dialog";
+│   │   │       import {
 │   │   │         Popover,
 │   │   │         PopoverContent,
 │   │   │         PopoverTrigger,
 │   │   │       } from "@/components/ui/popover";
 │   │   │       import { Button } from "@/components/ui/button";
+│   │   │       import { Input } from "@/components/ui/input";
+│   │   │       import { Label } from "@/components/ui/label";
 │   │   │       import { MoreHorizontal } from "lucide-react";
 │   │   │       import { BaseItem } from '@/types/DataTableTypes';
 │   │   │       
@@ -200,29 +307,98 @@ projman3-webui-new/
 │   │   │         item,
 │   │   │         actions,
 │   │   │       }: DataTableActionPopoverProps<T>) {
-│   │   │         return (
-│   │   │           <Popover>
-│   │   │             <PopoverTrigger asChild>
-│   │   │               <Button variant="ghost" className="h-8 w-8 p-0">
-│   │   │                 <MoreHorizontal className="h-4 w-4" />
-│   │   │                 <span className="sr-only">Open menu</span>
-│   │   │               </Button>
-│   │   │             </PopoverTrigger>
-│   │   │             <PopoverContent className="w-56" align="end">
-│   │   │               <div className="space-y-2">
-│   │   │                 {actions.map((action, index) => (
-│   │   │                   <Button
-│   │   │                     key={index}
-│   │   │                     variant={action.variant || "ghost"}
-│   │   │                     className="w-full justify-start"
-│   │   │                     onClick={() => action.action(item)}
+│   │   │         const [isModifying, setIsModifying] = React.useState(false);
+│   │   │         const [modifiedItem, setModifiedItem] = React.useState<T>({...item});
+│   │   │       
+│   │   │         const handleModify = () => {
+│   │   │           const modifyAction = actions.find(action => action.label === 'Modify');
+│   │   │           if (modifyAction) {
+│   │   │             modifyAction.action(modifiedItem);
+│   │   │             setIsModifying(false);
+│   │   │           }
+│   │   │         };
+│   │   │       
+│   │   │         const renderModifyFields = () => {
+│   │   │           return Object.entries(item).map(([key, value]) => {
+│   │   │             // Skip internal fields
+│   │   │             if (['id', 'createdAt', 'updatedAt'].includes(key)) return null;
+│   │   │       
+│   │   │             return (
+│   │   │               <div key={key} className="grid gap-2">
+│   │   │                 <Label htmlFor={key} className="capitalize">{key}</Label>
+│   │   │                 {key === 'status' ? (
+│   │   │                   <select
+│   │   │                     id={key}
+│   │   │                     className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background"
+│   │   │                     value={modifiedItem[key]}
+│   │   │                     onChange={(e) => setModifiedItem({...modifiedItem, [key]: e.target.value})}
 │   │   │                   >
-│   │   │                     {action.label}
-│   │   │                   </Button>
-│   │   │                 ))}
+│   │   │                     <option value="todo">Todo</option>
+│   │   │                     <option value="in-progress">In Progress</option>
+│   │   │                     <option value="completed">Completed</option>
+│   │   │                   </select>
+│   │   │                 ) : (
+│   │   │                   <Input
+│   │   │                     id={key}
+│   │   │                     type="text"
+│   │   │                     value={modifiedItem[key]}
+│   │   │                     onChange={(e) => setModifiedItem({...modifiedItem, [key]: e.target.value})}
+│   │   │                   />
+│   │   │                 )}
 │   │   │               </div>
-│   │   │             </PopoverContent>
-│   │   │           </Popover>
+│   │   │             );
+│   │   │           });
+│   │   │         };
+│   │   │       
+│   │   │         return (
+│   │   │           <>
+│   │   │             <Dialog open={isModifying} onOpenChange={setIsModifying}>
+│   │   │               <Popover>
+│   │   │                 <PopoverTrigger asChild>
+│   │   │                   <Button variant="ghost" className="h-8 w-8 p-0">
+│   │   │                     <MoreHorizontal className="h-4 w-4" />
+│   │   │                     <span className="sr-only">Open menu</span>
+│   │   │                   </Button>
+│   │   │                 </PopoverTrigger>
+│   │   │                 <PopoverContent className="w-56" align="end">
+│   │   │                   <div className="space-y-2">
+│   │   │                     {actions.map((action, index) => (
+│   │   │                       <Button
+│   │   │                         key={index}
+│   │   │                         variant={action.variant || "ghost"}
+│   │   │                         className="w-full justify-start"
+│   │   │                         onClick={() => {
+│   │   │                           if (action.label === 'Modify') {
+│   │   │                             setIsModifying(true);
+│   │   │                           } else {
+│   │   │                             action.action(item);
+│   │   │                           }
+│   │   │                         }}
+│   │   │                       >
+│   │   │                         {action.label}
+│   │   │                       </Button>
+│   │   │                     ))}
+│   │   │                   </div>
+│   │   │                 </PopoverContent>
+│   │   │               </Popover>
+│   │   │               <DialogContent>
+│   │   │                 <DialogHeader>
+│   │   │                   <DialogTitle>Modify Item</DialogTitle>
+│   │   │                 </DialogHeader>
+│   │   │                 <div className="grid gap-4 py-4">
+│   │   │                   {renderModifyFields()}
+│   │   │                 </div>
+│   │   │                 <div className="flex justify-end gap-4">
+│   │   │                   <Button variant="outline" onClick={() => setIsModifying(false)}>
+│   │   │                     Cancel
+│   │   │                   </Button>
+│   │   │                   <Button onClick={handleModify}>
+│   │   │                     Save Changes
+│   │   │                   </Button>
+│   │   │                 </div>
+│   │   │               </DialogContent>
+│   │   │             </Dialog>
+│   │   │           </>
 │   │   │         );
 │   │   │       }
 │   │   └── index.ts
@@ -230,50 +406,58 @@ projman3-webui-new/
 │   │           export * from './DataTableActionPopover';
 │   ├── TaskTable/
 │   │   ├── TaskTable.tsx
-│   │   │       // app/components/TaskTable/TaskTable.tsx
-│   │   │       import React from 'react';
-│   │   │       import { DataTable } from '../DataTableControlGroup/DataTable';
+│   │   │       // components/TaskTable/TaskTable.tsx
+│   │   │       import { BaseTable } from '../BaseTableSystem/BaseTable';
 │   │   │       import { Task } from '@/types/task';
 │   │   │       import { useTaskStore } from '@/store/taskStore';
-│   │   │       import { ColumnConfig } from '@/types/DataTableTypes';
 │   │   │       
 │   │   │       export function TaskTable() {
 │   │   │         const { tasks, updateTask, deleteTask, addTask } = useTaskStore();
 │   │   │       
-│   │   │         const columns: ColumnConfig<Task>[] = [
+│   │   │         const columns = [
 │   │   │           { 
-│   │   │             accessorKey: 'title',
+│   │   │             accessorKey: 'title' as keyof Task,
 │   │   │             header: 'Title'
 │   │   │           },
 │   │   │           { 
-│   │   │             accessorKey: 'status',
-│   │   │             header: 'Status',
-│   │   │             cell: ({ row }) => (
-│   │   │               <span className={
-│   │   │                 row.original.status === 'completed' ? 'text-green-600' :
-│   │   │                 row.original.status === 'in-progress' ? 'text-blue-600' :
-│   │   │                 'text-gray-600'
-│   │   │               }>
-│   │   │                 {row.original.status}
-│   │   │               </span>
-│   │   │             )
+│   │   │             accessorKey: 'status' as keyof Task,
+│   │   │             header: 'Status'
 │   │   │           },
 │   │   │           { 
-│   │   │             accessorKey: 'description',
+│   │   │             accessorKey: 'description' as keyof Task,
 │   │   │             header: 'Description'
 │   │   │           },
 │   │   │           { 
-│   │   │             accessorKey: 'updatedAt',
-│   │   │             header: 'Last Updated',
-│   │   │             cell: ({ row }) => new Date(row.original.updatedAt).toLocaleDateString()
+│   │   │             accessorKey: 'updatedAt' as keyof Task,
+│   │   │             header: 'Last Updated'
 │   │   │           }
 │   │   │         ];
 │   │   │       
+│   │   │         const renderCustomCell = (item: Task, key: keyof Task) => {
+│   │   │           if (key === 'status') {
+│   │   │             return (
+│   │   │               <span className={
+│   │   │                 item.status === 'completed' ? 'text-green-600' :
+│   │   │                 item.status === 'in-progress' ? 'text-blue-600' :
+│   │   │                 'text-gray-600'
+│   │   │               }>
+│   │   │                 {item.status}
+│   │   │               </span>
+│   │   │             );
+│   │   │           }
+│   │   │           return null;
+│   │   │         };
+│   │   │       
 │   │   │         const actions = [
+│   │   │           {
+│   │   │             label: 'Modify',
+│   │   │             action: (task: Task) => updateTask(task.id, task),
+│   │   │             variant: 'default' as const
+│   │   │           },
 │   │   │           {
 │   │   │             label: 'Mark In Progress',
 │   │   │             action: (task: Task) => updateTask(task.id, { status: 'in-progress' }),
-│   │   │             variant: 'secondary' as const
+│   │   │             variant: 'default' as const
 │   │   │           },
 │   │   │           {
 │   │   │             label: 'Mark Complete',
@@ -296,12 +480,13 @@ projman3-webui-new/
 │   │   │         };
 │   │   │       
 │   │   │         return (
-│   │   │           <DataTable<Task>
+│   │   │           <BaseTable<Task>
 │   │   │             data={tasks}
 │   │   │             columns={columns}
 │   │   │             actions={actions}
 │   │   │             title="Tasks"
 │   │   │             addNewItem={handleAddNewTask}
+│   │   │             renderCustomCell={renderCustomCell}
 │   │   │           />
 │   │   │         );
 │   │   │       }
@@ -421,6 +606,179 @@ projman3-webui-new/
 │       │       CardContent.displayName = "CardContent"
 │       │       
 │       │       export { Card, CardHeader, CardTitle, CardContent }
+│       ├── dialog.tsx
+│       │       "use client"
+│       │       
+│       │       import * as React from "react"
+│       │       import * as DialogPrimitive from "@radix-ui/react-dialog"
+│       │       import { X } from "lucide-react"
+│       │       
+│       │       import { cn } from "@/lib/utils"
+│       │       
+│       │       const Dialog = DialogPrimitive.Root
+│       │       
+│       │       const DialogTrigger = DialogPrimitive.Trigger
+│       │       
+│       │       const DialogPortal = DialogPrimitive.Portal
+│       │       
+│       │       const DialogClose = DialogPrimitive.Close
+│       │       
+│       │       const DialogOverlay = React.forwardRef<
+│       │         React.ElementRef<typeof DialogPrimitive.Overlay>,
+│       │         React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
+│       │       >(({ className, ...props }, ref) => (
+│       │         <DialogPrimitive.Overlay
+│       │           ref={ref}
+│       │           className={cn(
+│       │             "fixed inset-0 z-50 bg-black/80  data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+│       │             className
+│       │           )}
+│       │           {...props}
+│       │         />
+│       │       ))
+│       │       DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
+│       │       
+│       │       const DialogContent = React.forwardRef<
+│       │         React.ElementRef<typeof DialogPrimitive.Content>,
+│       │         React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
+│       │       >(({ className, children, ...props }, ref) => (
+│       │         <DialogPortal>
+│       │           <DialogOverlay />
+│       │           <DialogPrimitive.Content
+│       │             ref={ref}
+│       │             className={cn(
+│       │               "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg",
+│       │               className
+│       │             )}
+│       │             {...props}
+│       │           >
+│       │             {children}
+│       │             <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
+│       │               <X className="h-4 w-4" />
+│       │               <span className="sr-only">Close</span>
+│       │             </DialogPrimitive.Close>
+│       │           </DialogPrimitive.Content>
+│       │         </DialogPortal>
+│       │       ))
+│       │       DialogContent.displayName = DialogPrimitive.Content.displayName
+│       │       
+│       │       const DialogHeader = ({
+│       │         className,
+│       │         ...props
+│       │       }: React.HTMLAttributes<HTMLDivElement>) => (
+│       │         <div
+│       │           className={cn(
+│       │             "flex flex-col space-y-1.5 text-center sm:text-left",
+│       │             className
+│       │           )}
+│       │           {...props}
+│       │         />
+│       │       )
+│       │       DialogHeader.displayName = "DialogHeader"
+│       │       
+│       │       const DialogFooter = ({
+│       │         className,
+│       │         ...props
+│       │       }: React.HTMLAttributes<HTMLDivElement>) => (
+│       │         <div
+│       │           className={cn(
+│       │             "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
+│       │             className
+│       │           )}
+│       │           {...props}
+│       │         />
+│       │       )
+│       │       DialogFooter.displayName = "DialogFooter"
+│       │       
+│       │       const DialogTitle = React.forwardRef<
+│       │         React.ElementRef<typeof DialogPrimitive.Title>,
+│       │         React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
+│       │       >(({ className, ...props }, ref) => (
+│       │         <DialogPrimitive.Title
+│       │           ref={ref}
+│       │           className={cn(
+│       │             "text-lg font-semibold leading-none tracking-tight",
+│       │             className
+│       │           )}
+│       │           {...props}
+│       │         />
+│       │       ))
+│       │       DialogTitle.displayName = DialogPrimitive.Title.displayName
+│       │       
+│       │       const DialogDescription = React.forwardRef<
+│       │         React.ElementRef<typeof DialogPrimitive.Description>,
+│       │         React.ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
+│       │       >(({ className, ...props }, ref) => (
+│       │         <DialogPrimitive.Description
+│       │           ref={ref}
+│       │           className={cn("text-sm text-muted-foreground", className)}
+│       │           {...props}
+│       │         />
+│       │       ))
+│       │       DialogDescription.displayName = DialogPrimitive.Description.displayName
+│       │       
+│       │       export {
+│       │         Dialog,
+│       │         DialogPortal,
+│       │         DialogOverlay,
+│       │         DialogTrigger,
+│       │         DialogClose,
+│       │         DialogContent,
+│       │         DialogHeader,
+│       │         DialogFooter,
+│       │         DialogTitle,
+│       │         DialogDescription,
+│       │       }
+│       ├── input.tsx
+│       │       import * as React from "react"
+│       │       
+│       │       import { cn } from "@/lib/utils"
+│       │       
+│       │       const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
+│       │         ({ className, type, ...props }, ref) => {
+│       │           return (
+│       │             <input
+│       │               type={type}
+│       │               className={cn(
+│       │                 "flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+│       │                 className
+│       │               )}
+│       │               ref={ref}
+│       │               {...props}
+│       │             />
+│       │           )
+│       │         }
+│       │       )
+│       │       Input.displayName = "Input"
+│       │       
+│       │       export { Input }
+│       ├── label.tsx
+│       │       "use client"
+│       │       
+│       │       import * as React from "react"
+│       │       import * as LabelPrimitive from "@radix-ui/react-label"
+│       │       import { cva, type VariantProps } from "class-variance-authority"
+│       │       
+│       │       import { cn } from "@/lib/utils"
+│       │       
+│       │       const labelVariants = cva(
+│       │         "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+│       │       )
+│       │       
+│       │       const Label = React.forwardRef<
+│       │         React.ElementRef<typeof LabelPrimitive.Root>,
+│       │         React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root> &
+│       │           VariantProps<typeof labelVariants>
+│       │       >(({ className, ...props }, ref) => (
+│       │         <LabelPrimitive.Root
+│       │           ref={ref}
+│       │           className={cn(labelVariants(), className)}
+│       │           {...props}
+│       │         />
+│       │       ))
+│       │       Label.displayName = LabelPrimitive.Root.displayName
+│       │       
+│       │       export { Label }
 │       ├── popover.tsx
 │       │       "use client"
 │       │       
@@ -621,6 +979,11 @@ projman3-webui-new/
 │   │       pnpm dlx shadcn-ui@latest init
 │   │       pnpm dlx shadcn-ui@latest add popover
 │   │       pnpm dlx shadcn-ui@latest add table
+│   │       pnpm dlx shadcn-ui@latest add button
+│   │       pnpm dlx shadcn-ui@latest add card
+│   │       pnpm dlx shadcn-ui@latest add dialog
+│   │       pnpm dlx shadcn-ui@latest add input
+│   │       pnpm dlx shadcn-ui@latest add label
 │   └── whats_the_idea.md
 │           we should have 2 main views. 
 │           
@@ -678,6 +1041,8 @@ projman3-webui-new/
 │           "lint": "next lint"
 │         },
 │         "dependencies": {
+│           "@radix-ui/react-dialog": "^1.1.6",
+│           "@radix-ui/react-label": "^2.1.2",
 │           "@radix-ui/react-popover": "^1.1.6",
 │           "@radix-ui/react-slot": "^1.1.2",
 │           "@tanstack/react-table": "^8.21.2",
@@ -835,6 +1200,38 @@ projman3-webui-new/
 │         "exclude": ["node_modules"]
 │       }
 └── types/
+    ├── BaseTableTypes.ts
+    │       // types/BaseTableTypes.ts
+    │       export interface BaseItem {
+    │           id: string;
+    │           createdAt: Date;
+    │           updatedAt: Date;
+    │         }
+    │         
+    │         export interface BaseTableItem extends BaseItem {
+    │           [key: string]: any;  // Allow for dynamic properties
+    │         }
+    │         
+    │         export type ColumnConfig<T extends BaseTableItem> = {
+    │           accessorKey: keyof T | 'actions';
+    │           header: string;
+    │           cell?: (props: { row: { original: T } }) => React.ReactNode;
+    │         }
+    │         
+    │         export type ActionConfig<T extends BaseTableItem> = {
+    │           label: string;
+    │           action: (item: T) => void;
+    │           variant?: 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+    │         }
+    │         
+    │         export interface BaseTableProps<T extends BaseTableItem> {
+    │           data: T[];
+    │           columns: ColumnConfig<T>[];
+    │           actions: ActionConfig<T>[];
+    │           title: string;
+    │           addNewItem?: () => void;
+    │           renderCustomCell?: (item: T, key: keyof T) => React.ReactNode;
+    │         }
     ├── DataTableTypes.ts
     │       // app/types/DataTableTypes.ts
     │       export interface BaseItem {
