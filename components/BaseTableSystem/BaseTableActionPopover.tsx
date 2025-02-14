@@ -89,6 +89,18 @@ export function BaseTableActionPopover<T extends BaseTableItem>({
               <option value="in_progress">In Progress</option>
               <option value="completed">Completed</option>
             </select>
+          ) : key === 'priority' ? (
+            <select
+              id={key}
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background"
+              value={String(modifiedItem[key] || '')}
+              onChange={(e) => setModifiedItem({...modifiedItem, [key]: e.target.value})}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
           ) : (
             <Input
               id={key}
