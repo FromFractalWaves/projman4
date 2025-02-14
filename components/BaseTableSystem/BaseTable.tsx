@@ -11,6 +11,9 @@ import {
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { BaseTableActionPopover } from "./BaseTableActionPopover";
 import { BaseTableItem, BaseTableProps } from "@/types/BaseTableTypes";
 
@@ -21,7 +24,11 @@ export function BaseTable<T extends BaseTableItem>({
   title,
   addNewItem,
   renderCustomCell,
+  defaultNewItem,
 }: BaseTableProps<T>) {
+  const [isAddingNew, setIsAddingNew] = React.useState(false);
+  const [newItem, setNewItem] = React.useState<Partial<T>>(defaultNewItem || {});
+
   const finalColumns = [
     ...columns,
     {
@@ -53,12 +60,53 @@ export function BaseTable<T extends BaseTableItem>({
     return String(value);
   };
 
+  const handleAddNew = () => {
+    if (addNewItem) {
+      addNewItem(newItem as T);
+      setNewItem(defaultNewItem || {});
+      setIsAddingNew(false);
+    }
+  };
+
+  const renderAddFields = () => {
+    return columns.map((column) => {
+      const key = String(column.accessorKey);
+      // Skip internal fields and actions column
+      if (['id', 'createdAt', 'updatedAt', 'actions'].includes(key)) return null;
+
+      return (
+        <div key={key} className="grid gap-2">
+          <Label htmlFor={key} className="capitalize">{key}</Label>
+          {'status' in newItem && key === 'status' ? (
+            <select
+              id={key}
+              className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background"
+              value={String(newItem[key] || '')}
+              onChange={(e) => setNewItem({...newItem, [key]: e.target.value})}
+            >
+              <option value="todo">Todo</option>
+              <option value="in-progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+          ) : (
+            <Input
+              id={key}
+              type="text"
+              value={String(newItem[key] || '')}
+              onChange={(e) => setNewItem({...newItem, [key]: e.target.value})}
+            />
+          )}
+        </div>
+      );
+    });
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>{title}</CardTitle>
         {addNewItem && (
-          <Button onClick={addNewItem} size="sm">
+          <Button onClick={() => setIsAddingNew(true)} size="sm">
             <Plus className="w-4 h-4 mr-2" />
             Add New
           </Button>
@@ -90,6 +138,28 @@ export function BaseTable<T extends BaseTableItem>({
           </TableBody>
         </Table>
       </CardContent>
+
+      <Dialog open={isAddingNew} onOpenChange={setIsAddingNew}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Item</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {renderAddFields()}
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => {
+              setIsAddingNew(false);
+              setNewItem(defaultNewItem || {});
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddNew}>
+              Add
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

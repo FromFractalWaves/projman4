@@ -63,12 +63,18 @@ export function TaskTable() {
     }
   ];
 
-  const handleAddNewTask = () => {
+  const handleAddNewTask = (taskData: Task) => {
     addTask({
-      title: 'New Task',
-      description: 'Add description here',
-      status: 'todo'
+      title: taskData.title,
+      description: taskData.description,
+      status: taskData.status
     });
+  };
+
+  const defaultNewItem = {
+    title: '',
+    description: '',
+    status: 'todo' as const
   };
 
   return (
@@ -79,6 +85,7 @@ export function TaskTable() {
       title="Tasks"
       addNewItem={handleAddNewTask}
       renderCustomCell={renderCustomCell}
+      defaultNewItem={defaultNewItem}
     />
   );
 }

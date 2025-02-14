@@ -26,7 +26,7 @@ export interface BaseItem {
     columns: ColumnConfig<T>[];
     actions: ActionConfig<T>[];
     title: string;
-    addNewItem?: () => void;
+    addNewItem?: (item: T) => void;
     renderCustomCell?: (item: T, key: keyof T) => React.ReactNode;
+    defaultNewItem?: Partial<T>;
   }
-  
