@@ -18,3 +18,6 @@ pnpm dlx shadcn-ui@latest add card
 pnpm dlx shadcn-ui@latest add dialog
 pnpm dlx shadcn-ui@latest add input
 pnpm dlx shadcn-ui@latest add label
+
+pnpm add prisma @prisma/client
+pnpm dlx prisma init

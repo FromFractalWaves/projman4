@@ -1,10 +1,14 @@
-// components/TaskTable/TaskTable.tsx
+import { useEffect } from 'react';
 import { BaseTable } from '../BaseTableSystem/BaseTable';
-import { Task } from '@/types/task';
+import { Task } from '@prisma/client';
 import { useTaskStore } from '@/store/taskStore';
 
 export function TaskTable() {
-  const { tasks, updateTask, deleteTask, addTask } = useTaskStore();
+  const { tasks, fetchTasks, updateTask, deleteTask, addTask, isLoading } = useTaskStore();
+
+  useEffect(() => {
+    fetchTasks();
+  }, [fetchTasks]);
 
   const columns = [
     { 
@@ -30,10 +34,10 @@ export function TaskTable() {
       return (
         <span className={
           item.status === 'completed' ? 'text-green-600' :
-          item.status === 'in-progress' ? 'text-blue-600' :
+          item.status === 'in_progress' ? 'text-blue-600' :
           'text-gray-600'
         }>
-          {item.status}
+          {item.status === 'in_progress' ? 'in progress' : item.status}
         </span>
       );
     }
@@ -48,7 +52,7 @@ export function TaskTable() {
     },
     {
       label: 'Mark In Progress',
-      action: (task: Task) => updateTask(task.id, { status: 'in-progress' }),
+      action: (task: Task) => updateTask(task.id, { status: 'in_progress' }),
       variant: 'default' as const
     },
     {
@@ -63,11 +67,11 @@ export function TaskTable() {
     }
   ];
 
-  const handleAddNewTask = (taskData: Task) => {
+  const handleAddNewTask = (taskData: Partial<Task>) => {
     addTask({
-      title: taskData.title,
-      description: taskData.description,
-      status: taskData.status
+      title: taskData.title || '',
+      description: taskData.description || '',
+      status: taskData.status || 'todo'
     });
   };
 
@@ -76,6 +80,10 @@ export function TaskTable() {
     description: '',
     status: 'todo' as const
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <BaseTable<Task>
