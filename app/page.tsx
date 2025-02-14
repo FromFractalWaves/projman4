@@ -1,19 +1,19 @@
 'use client'
 
 import React, { useEffect } from 'react'
-import { ObjectiveTable } from '@/components/ObjectiveTable/ObjectiveTable'
-import { useObjectiveStore } from '@/store/objectiveStore'
+import { ProjectTable } from '@/components/ProjectTable/ProjectTable'
+import { useProjectStore } from '@/store/projectStore'
 
-export default function ObjectivesPage() {
-  const { fetchObjectives } = useObjectiveStore()
+export default function ProjectsPage() {
+  const { fetchProjects } = useProjectStore()
 
   useEffect(() => {
-    fetchObjectives()
-  }, [fetchObjectives])
+    fetchProjects()
+  }, [fetchProjects])
 
   return (
     <div className="container mx-auto py-10">
-      <ObjectiveTable />
+      <ProjectTable />
     </div>
   )
 }
