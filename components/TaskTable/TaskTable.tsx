@@ -1,4 +1,4 @@
-// app/components/TaskTable/TaskTable.tsx
+// components/TaskTable/TaskTable.tsx
 import React from 'react';
 import { DataTable } from '../DataTableControlGroup/DataTable';
 import { Task } from '@/types/task';
@@ -38,6 +38,11 @@ export function TaskTable() {
   ];
 
   const actions = [
+    {
+      label: 'Modify',
+      action: (task: Task) => updateTask(task.id, task),
+      variant: 'default' as const
+    },
     {
       label: 'Mark In Progress',
       action: (task: Task) => updateTask(task.id, { status: 'in-progress' }),
