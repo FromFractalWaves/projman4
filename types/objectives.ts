@@ -8,6 +8,8 @@ export interface Objective extends BaseItem {
   description: string;
   status: Status;
   dueDate: Date | null;
+  startOn?: Date | null;
+  started?: Date | null;
   priority: Priority;
   progress: number;
 }
@@ -35,5 +37,7 @@ export const DEFAULT_OBJECTIVE: ObjectiveInput = {
   status: 'todo',
   priority: 'medium',
   progress: 0,
-  dueDate: null
+  dueDate: null,
+  startOn: null,
+  started: null,
 };
