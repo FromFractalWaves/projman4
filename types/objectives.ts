@@ -1,4 +1,3 @@
-// types/objective.ts
 import { BaseItem } from './BaseTableTypes';
 
 export type Status = 'todo' | 'in_progress' | 'completed';
@@ -29,46 +28,7 @@ export function isValidPriority(priority: string): priority is Priority {
   return ['low', 'medium', 'high', 'critical'].includes(priority);
 }
 
-// Utility functions for status and priority display
-export const formatStatus = (status: Status): string => {
-  switch (status) {
-    case 'in_progress':
-      return 'In Progress';
-    default:
-      return status.charAt(0).toUpperCase() + status.slice(1);
-  }
-};
-
-export const formatPriority = (priority: Priority): string => {
-  return priority.charAt(0).toUpperCase() + priority.slice(1);
-};
-
-// Color utilities for UI
-export const getPriorityColor = (priority: Priority): string => {
-  switch (priority) {
-    case 'critical':
-      return 'text-red-600';
-    case 'high':
-      return 'text-orange-600';
-    case 'medium':
-      return 'text-yellow-600';
-    case 'low':
-      return 'text-green-600';
-  }
-};
-
-export const getStatusColor = (status: Status): string => {
-  switch (status) {
-    case 'completed':
-      return 'text-green-600';
-    case 'in_progress':
-      return 'text-blue-600';
-    default:
-      return 'text-gray-600';
-  }
-};
-
-// Constants for default values
+// Constants
 export const DEFAULT_OBJECTIVE: ObjectiveInput = {
   title: '',
   description: '',

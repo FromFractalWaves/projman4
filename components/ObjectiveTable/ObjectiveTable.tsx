@@ -1,36 +1,42 @@
 import { BaseTable } from '../BaseTableSystem/BaseTable';
 import { useObjectiveStore } from '@/store/objectiveStore';
 import { Objective } from '@/types/objectives';
+import { useEffect } from 'react';
 
 export function ObjectiveTable() {
-  const { objectives, updateObjective, deleteObjective, addObjective } = useObjectiveStore();
+  const { objectives, updateObjective, deleteObjective, addObjective, fetchObjectives } = useObjectiveStore();
+
+  // Add useEffect to fetch objectives when component mounts
+  useEffect(() => {
+    fetchObjectives();
+  }, [fetchObjectives]);
 
   const columns = [
-    { 
+    {
       accessorKey: 'title' as keyof Objective,
       header: 'Title'
     },
-    { 
+    {
       accessorKey: 'status' as keyof Objective,
       header: 'Status'
     },
-    { 
+    {
       accessorKey: 'priority' as keyof Objective,
       header: 'Priority'
     },
-    { 
+    {
       accessorKey: 'progress' as keyof Objective,
       header: 'Progress'
     },
-    { 
+    {
       accessorKey: 'dueDate' as keyof Objective,
       header: 'Due Date'
     },
-    { 
+    {
       accessorKey: 'description' as keyof Objective,
       header: 'Description'
     },
-    { 
+    {
       accessorKey: 'updatedAt' as keyof Objective,
       header: 'Last Updated'
     }
@@ -44,7 +50,7 @@ export function ObjectiveTable() {
           item.status === 'in_progress' ? 'text-blue-600' :
           'text-gray-600'
         }>
-          {item.status === 'in_progress' ? 'In Progress' : 
+          {item.status === 'in_progress' ? 'In Progress' :
            item.status.charAt(0).toUpperCase() + item.status.slice(1)}
         </span>
       );
@@ -64,8 +70,8 @@ export function ObjectiveTable() {
     if (key === 'progress') {
       return (
         <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div 
-            className="bg-blue-600 h-2.5 rounded-full" 
+          <div
+            className="bg-blue-600 h-2.5 rounded-full"
             style={{ width: `${item.progress}%` }}
           ></div>
         </div>
@@ -80,35 +86,72 @@ export function ObjectiveTable() {
   const actions = [
     {
       label: 'Modify',
-      action: (objective: Objective) => updateObjective(objective.id, objective),
+      action: async (objective: Objective) => {
+        try {
+          await updateObjective(objective.id, objective);
+          // Fetch objectives after successful update
+          fetchObjectives();
+        } catch (error) {
+          console.error('Error modifying objective:', error);
+        }
+      },
       variant: 'default' as const
     },
     {
       label: 'Mark In Progress',
-      action: (objective: Objective) => updateObjective(objective.id, { status: 'in_progress' }),
+      action: async (objective: Objective) => {
+        try {
+          await updateObjective(objective.id, { status: 'in_progress' });
+          fetchObjectives();
+        } catch (error) {
+          console.error('Error marking objective in progress:', error);
+        }
+      },
       variant: 'default' as const
     },
     {
       label: 'Mark Complete',
-      action: (objective: Objective) => updateObjective(objective.id, { status: 'completed' }),
+      action: async (objective: Objective) => {
+        try {
+          await updateObjective(objective.id, { status: 'completed' });
+          fetchObjectives();
+        } catch (error) {
+          console.error('Error marking objective complete:', error);
+        }
+      },
       variant: 'default' as const
     },
     {
       label: 'Delete',
-      action: (objective: Objective) => deleteObjective(objective.id),
+      action: async (objective: Objective) => {
+        try {
+          await deleteObjective(objective.id);
+          fetchObjectives();
+        } catch (error) {
+          console.error('Error deleting objective:', error);
+        }
+      },
       variant: 'destructive' as const
     }
   ];
 
-  const handleAddNewObjective = (objectiveData: Objective) => {
-    addObjective({
-      title: objectiveData.title,
-      description: objectiveData.description,
-      status: objectiveData.status,
-      priority: objectiveData.priority,
-      progress: objectiveData.progress,
-      dueDate: objectiveData.dueDate
-    });
+  const handleAddNewObjective = async (objectiveData: Objective) => {
+    try {
+      console.log('Adding new objective:', objectiveData);
+      await addObjective({
+        title: objectiveData.title,
+        description: objectiveData.description,
+        status: objectiveData.status,
+        priority: objectiveData.priority,
+        progress: objectiveData.progress,
+        dueDate: objectiveData.dueDate
+      });
+      console.log('Successfully added objective');
+      // Fetch objectives after successful addition
+      fetchObjectives();
+    } catch (error) {
+      console.error('Error adding objective:', error);
+    }
   };
 
   const defaultNewItem = {
@@ -122,7 +165,7 @@ export function ObjectiveTable() {
 
   return (
     <BaseTable<Objective>
-      data={objectives || []} // Add null check here
+      data={objectives}
       columns={columns}
       actions={actions}
       title="Objectives"

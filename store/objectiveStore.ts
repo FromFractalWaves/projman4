@@ -22,13 +22,12 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await fetch('/api/objectives')
-      if (!response.ok) {
-        throw new Error('Failed to fetch objectives')
-      }
+      if (!response.ok) throw new Error('Failed to fetch objectives')
       const objectives = await response.json()
       set({ objectives, isLoading: false })
     } catch (error) {
       set({ error: 'Failed to fetch objectives', isLoading: false })
+      console.error('Fetch error:', error)
     }
   },
 
@@ -40,13 +39,21 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(objectiveData),
       })
-      if (!response.ok) {
-        throw new Error('Failed to add objective')
-      }
+      if (!response.ok) throw new Error('Failed to add objective')
       const newObjective = await response.json()
-      set(state => ({ objectives: [...state.objectives, newObjective], isLoading: false }))
+      
+      // Update state with the new objective
+      set(state => ({
+        objectives: [newObjective, ...state.objectives],
+        isLoading: false,
+        error: null
+      }))
+      
+      // Refresh the objectives to ensure consistency
+      get().fetchObjectives()
     } catch (error) {
       set({ error: 'Failed to add objective', isLoading: false })
+      console.error('Add error:', error)
     }
   },
 
@@ -58,18 +65,19 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       })
-      if (!response.ok) {
-        throw new Error('Failed to update objective')
-      }
+      if (!response.ok) throw new Error('Failed to update objective')
       const updatedObjective = await response.json()
+      
       set(state => ({
         objectives: state.objectives.map(objective => 
           objective.id === id ? updatedObjective : objective
         ),
-        isLoading: false
+        isLoading: false,
+        error: null
       }))
     } catch (error) {
       set({ error: 'Failed to update objective', isLoading: false })
+      console.error('Update error:', error)
     }
   },
 
@@ -79,15 +87,16 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
       const response = await fetch(`/api/objectives/${id}`, {
         method: 'DELETE',
       })
-      if (!response.ok) {
-        throw new Error('Failed to delete objective')
-      }
+      if (!response.ok) throw new Error('Failed to delete objective')
+      
       set(state => ({
         objectives: state.objectives.filter(objective => objective.id !== id),
-        isLoading: false
+        isLoading: false,
+        error: null
       }))
     } catch (error) {
       set({ error: 'Failed to delete objective', isLoading: false })
+      console.error('Delete error:', error)
     }
   },
 }))
