@@ -1,19 +1,19 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { ProjectTable } from '@/components/ProjectTable/ProjectTable';
-import { useProjectStore } from '@/store/projectStore';
+import { TaskTable } from '@/components/TaskTable/TaskTable';
+import { useTaskStore } from '@/store/taskStore';
 
-export default function ProjectsPage() {
-  const { fetchProjects } = useProjectStore();
+export default function TasksPage() {
+  const { fetchTasks } = useTaskStore();
 
   useEffect(() => {
-    fetchProjects();
-  }, [fetchProjects]);
+    fetchTasks();
+  }, [fetchTasks]);
 
   return (
     <div className="container mx-auto py-10">
-      <ProjectTable />
+      <TaskTable />
     </div>
   );
 }
