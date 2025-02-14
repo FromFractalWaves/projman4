@@ -4,9 +4,24 @@ import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useObjectiveStore } from '@/store/objectiveStore';
 import { Clock, Target, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Project } from '@/types/projects';
+import { Objective } from '@/types/objectives';
+
+interface StatItem {
+  title: string;
+  value: number;
+  icon: JSX.Element;
+  change: number;
+  changeLabel: string;
+  color: string;
+}
+
+interface ItemWithDueDate {
+  dueDate?: Date | null;
+}
 
 // Helper function to calculate due soon items
-const calculateDueSoonItems = (items) => {
+const calculateDueSoonItems = (items: Array<Project | Objective>): number => {
   return items.filter(item => {
     if (!item.dueDate) return false;
     const dueDate = new Date(item.dueDate);
@@ -21,13 +36,13 @@ export function DashboardStats() {
   const { projects, isLoading: projectsLoading, error: projectsError } = useProjectStore();
   const { objectives, isLoading: objectivesLoading, error: objectivesError } = useObjectiveStore();
 
-  const [stats, setStats] = useState([]);
+  const [stats, setStats] = useState<StatItem[]>([]);
   const isLoading = tasksLoading || projectsLoading || objectivesLoading;
   const hasError = tasksError || projectsError || objectivesError;
 
   useEffect(() => {
     if (!isLoading && !hasError) {
-      const newStats = [
+      const newStats: StatItem[] = [
         {
           title: "Total Tasks",
           value: tasks.length,
@@ -109,7 +124,7 @@ export function DashboardStats() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {typeof stat.value === 'number' && stat.title === "Objectives Progress" 
+                {stat.title === "Objectives Progress" 
                   ? `${stat.value}%` 
                   : stat.value}
               </div>
