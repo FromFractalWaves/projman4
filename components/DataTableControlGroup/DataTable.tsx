@@ -1,4 +1,4 @@
-// app/components/DataTableControlGroup/DataTable.tsx
+// components/DataTableControlGroup/DataTable.tsx
 import {
   Table,
   TableBody,
@@ -24,7 +24,7 @@ export function DataTable<T extends BaseItem>({
     ...columns,
     {
       accessorKey: 'actions',
-      header: 'Actions',
+      header: '', // Removed the "Actions" label
       cell: ({ row }: { row: { original: T } }) => (
         <DataTableActionPopover item={row.original} actions={actions} />
       ),
