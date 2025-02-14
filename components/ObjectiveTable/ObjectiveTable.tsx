@@ -1,7 +1,6 @@
-// components/ObjectiveTable/ObjectiveTable.tsx
 import { BaseTable } from '../BaseTableSystem/BaseTable';
-import { Objective } from '@prisma/client';
 import { useObjectiveStore } from '@/store/objectiveStore';
+import { Objective } from '@/types/objectives';
 
 export function ObjectiveTable() {
   const { objectives, updateObjective, deleteObjective, addObjective } = useObjectiveStore();
@@ -123,7 +122,7 @@ export function ObjectiveTable() {
 
   return (
     <BaseTable<Objective>
-      data={objectives}
+      data={objectives || []} // Add null check here
       columns={columns}
       actions={actions}
       title="Objectives"

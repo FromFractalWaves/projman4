@@ -1,10 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import { Objective } from '@prisma/client'
-import { StateCreator } from 'zustand'
-
-type ObjectiveInput = Omit<Objective, 'id' | 'createdAt' | 'updatedAt'>
+import { Objective, ObjectiveInput } from '@/types/objectives'
 
 interface ObjectiveState {
   objectives: Objective[]
@@ -25,6 +22,9 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
     set({ isLoading: true, error: null })
     try {
       const response = await fetch('/api/objectives')
+      if (!response.ok) {
+        throw new Error('Failed to fetch objectives')
+      }
       const objectives = await response.json()
       set({ objectives, isLoading: false })
     } catch (error) {
@@ -40,6 +40,9 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(objectiveData),
       })
+      if (!response.ok) {
+        throw new Error('Failed to add objective')
+      }
       const newObjective = await response.json()
       set(state => ({ objectives: [...state.objectives, newObjective], isLoading: false }))
     } catch (error) {
@@ -55,6 +58,9 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       })
+      if (!response.ok) {
+        throw new Error('Failed to update objective')
+      }
       const updatedObjective = await response.json()
       set(state => ({
         objectives: state.objectives.map(objective => 
@@ -70,9 +76,12 @@ export const useObjectiveStore = create<ObjectiveState>((set, get) => ({
   deleteObjective: async (id: string) => {
     set({ isLoading: true, error: null })
     try {
-      await fetch(`/api/objectives/${id}`, {
+      const response = await fetch(`/api/objectives/${id}`, {
         method: 'DELETE',
       })
+      if (!response.ok) {
+        throw new Error('Failed to delete objective')
+      }
       set(state => ({
         objectives: state.objectives.filter(objective => objective.id !== id),
         isLoading: false

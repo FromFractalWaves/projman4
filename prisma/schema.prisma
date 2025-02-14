@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Objective {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String
-  status      Status   @default(todo)
+  status      Status    @default(todo)
   dueDate     DateTime?
-  priority    Priority @default(medium)
-  progress    Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  priority    Priority  @default(medium)
+  progress    Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("objectives")
 }
