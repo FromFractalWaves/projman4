@@ -1,29 +1,53 @@
+// components/dashboard/DashboardLayout/DashboardLayout.tsx
+'use client';
+
 import React, { useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProjectCard } from '@/components/entityType/project/ProjectCards';
-import { ObjectiveCard } from '@/components/entityType/objective/Objectivecards';
-import { TaskCard } from '@/components/entityType/task/TaskCards';
+import { Card, CardContent } from '@/components/ui/card';
+import { Loader2, ListTodo, Target, CheckCircle2 } from 'lucide-react';
+import { BaseDashboard } from '@/components/base/BaseDashboard/BaseDashboard';
+import { CardControlGroup } from '@/components/base/CardControlGroup/CardControlGroup';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useObjectiveStore } from '@/store/objectiveStore';
-import { Loader2, CheckCircle2, ListTodo, Target } from 'lucide-react';
+import { Task } from '@/types/tasks';
 import { Project } from '@/types/projects';
 import { Objective } from '@/types/objectives';
-import { Task } from '@/types/tasks';
-import { ActionConfig } from '@/types/BaseCardTypes';
-import { DashboardHeader } from '@/components/dashboard/DashboardLayout/DashboardHeader';
-import { TaskInput } from '@/types/tasks';
-import { ProjectInput } from '@/types/projects';
-import { ObjectiveInput } from '@/types/objectives';
+import { DashboardHeader } from './DashboardHeader';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
 }
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { tasks, updateTask, fetchTasks, isLoading: tasksLoading, error: tasksError } = useTaskStore();
-  const { projects, updateProject, fetchProjects, isLoading: projectsLoading, error: projectsError } = useProjectStore();
-  const { objectives, updateObjective, fetchObjectives, isLoading: objectivesLoading, error: objectivesError } = useObjectiveStore();
+  const { 
+    tasks, 
+    updateTask, 
+    fetchTasks, 
+    addTask,
+    deleteTask,
+    isLoading: tasksLoading, 
+    error: tasksError 
+  } = useTaskStore();
+  
+  const { 
+    projects, 
+    updateProject, 
+    fetchProjects,
+    addProject,
+    deleteProject, 
+    isLoading: projectsLoading, 
+    error: projectsError 
+  } = useProjectStore();
+  
+  const { 
+    objectives, 
+    updateObjective, 
+    fetchObjectives,
+    addObjective,
+    deleteObjective,
+    isLoading: objectivesLoading, 
+    error: objectivesError 
+  } = useObjectiveStore();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -38,177 +62,6 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const isLoading = tasksLoading || projectsLoading || objectivesLoading;
   const hasError = tasksError || projectsError || objectivesError;
-
-  const handleAddTask = async (task: TaskInput) => {
-    try {
-      await addTask(task);
-      fetchTasks();
-    } catch (error) {
-      console.error('Error adding task:', error);
-    }
-  };
-  
-  const handleAddProject = async (project: ProjectInput) => {
-    try {
-      await addProject(project);
-      fetchProjects();
-    } catch (error) {
-      console.error('Error adding project:', error);
-    }
-  };
-  
-  const handleAddObjective = async (objective: ObjectiveInput) => {
-    try {
-      await addObjective(objective);
-      fetchObjectives();
-    } catch (error) {
-      console.error('Error adding objective:', error);
-    }
-  };
-
-  // Stats data
-  const stats = [
-    {
-      title: "Tasks",
-      total: tasks.length,
-      active: tasks.filter(t => t.status !== 'completed').length,
-      icon: <ListTodo className="h-4 w-4 text-blue-600" />,
-      color: "bg-blue-50"
-    },
-    {
-      title: "Projects",
-      total: projects.length,
-      active: projects.filter(p => p.status !== 'completed').length,
-      icon: <Target className="h-4 w-4 text-green-600" />,
-      color: "bg-green-50"
-    },
-    {
-      title: "Objectives",
-      total: objectives.length,
-      active: objectives.filter(o => o.status !== 'completed').length,
-      icon: <CheckCircle2 className="h-4 w-4 text-purple-600" />,
-      color: "bg-purple-50"
-    }
-  ];
-
-  // Action configurations
-  const projectActions: ActionConfig<Project>[] = [
-    {
-      label: 'Modify',
-      action: async (project: Project) => {
-        try {
-          await updateProject(project.id, project);
-          fetchProjects();
-        } catch (error) {
-          console.error('Error modifying project:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Mark In Progress',
-      action: async (project: Project) => {
-        try {
-          await updateProject(project.id, { status: 'in_progress' });
-          fetchProjects();
-        } catch (error) {
-          console.error('Error marking project in progress:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Mark Complete',
-      action: async (project: Project) => {
-        try {
-          await updateProject(project.id, { status: 'completed' });
-          fetchProjects();
-        } catch (error) {
-          console.error('Error marking project complete:', error);
-        }
-      },
-      variant: 'default',
-    }
-  ];
-
-  const objectiveActions: ActionConfig<Objective>[] = [
-    {
-      label: 'Modify',
-      action: async (objective: Objective) => {
-        try {
-          await updateObjective(objective.id, objective);
-          fetchObjectives();
-        } catch (error) {
-          console.error('Error modifying objective:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Mark In Progress',
-      action: async (objective: Objective) => {
-        try {
-          await updateObjective(objective.id, { status: 'in_progress' });
-          fetchObjectives();
-        } catch (error) {
-          console.error('Error marking objective in progress:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Update Progress',
-      action: async (objective: Objective) => {
-        try {
-          const newProgress = Math.min(100, (objective.progress || 0) + 10);
-          await updateObjective(objective.id, { progress: newProgress });
-          fetchObjectives();
-        } catch (error) {
-          console.error('Error updating objective progress:', error);
-        }
-      },
-      variant: 'default',
-    }
-  ];
-
-  const taskActions: ActionConfig<Task>[] = [
-    {
-      label: 'Modify',
-      action: async (task: Task) => {
-        try {
-          await updateTask(task.id, task);
-          fetchTasks();
-        } catch (error) {
-          console.error('Error modifying task:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Mark In Progress',
-      action: async (task: Task) => {
-        try {
-          await updateTask(task.id, { status: 'in_progress' });
-          fetchTasks();
-        } catch (error) {
-          console.error('Error marking task in progress:', error);
-        }
-      },
-      variant: 'default',
-    },
-    {
-      label: 'Mark Complete',
-      action: async (task: Task) => {
-        try {
-          await updateTask(task.id, { status: 'completed' });
-          fetchTasks();
-        } catch (error) {
-          console.error('Error marking task complete:', error);
-        }
-      },
-      variant: 'default',
-    }
-  ];
 
   if (isLoading) {
     return (
@@ -239,95 +92,283 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  return (
-    <div className="container mx-auto py-6 px-4">
-      <DashboardHeader 
-        onAddTask={handleAddTask}
-        onAddProject={handleAddProject}
-        onAddObjective={handleAddObjective}
-      />
-      <div className="grid gap-6">
-        {/* Stats Section */}
-        <div className="grid gap-4 md:grid-cols-3">
-          {stats.map((stat, index) => (
-            <Card key={index} className={stat.color}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {stat.title}
-                </CardTitle>
-                {stat.icon}
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {stat.total}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  {stat.active} active
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Main Content Sections */}
-        <div className="grid gap-6">
-          {/* Projects Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Projects</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map((project) => (
-                  <ProjectCard 
-                    key={project.id}
-                    project={project}
-                    actions={projectActions}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Objectives Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Objectives</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {objectives.map((objective) => (
-                  <ObjectiveCard 
-                    key={objective.id}
-                    objective={objective}
-                    actions={objectiveActions}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Tasks Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tasks</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {tasks.map((task) => (
-                  <TaskCard 
-                    key={task.id}
-                    task={task}
-                    actions={taskActions}
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </div>
+  const header = (
+    <DashboardHeader 
+      onAddTask={addTask}
+      onAddProject={addProject}
+      onAddObjective={addObjective}
+    />
   );
+
+  // Stats data for the dashboard header
+  const stats = [
+    {
+      title: "Tasks",
+      total: tasks.length,
+      active: tasks.filter(t => t.status !== 'completed').length,
+      icon: <ListTodo className="h-4 w-4 text-blue-600" />,
+      color: "bg-blue-50"
+    },
+    {
+      title: "Projects",
+      total: projects.length,
+      active: projects.filter(p => p.status !== 'completed').length,
+      icon: <Target className="h-4 w-4 text-green-600" />,
+      color: "bg-green-50"
+    },
+    {
+      title: "Objectives",
+      total: objectives.length,
+      active: objectives.filter(o => o.status !== 'completed').length,
+      icon: <CheckCircle2 className="h-4 w-4 text-purple-600" />,
+      color: "bg-purple-50"
+    }
+  ];
+
+  // Define sections for the dashboard
+  const sections = [
+    {
+      title: 'Projects',
+      content: (
+        <CardControlGroup<Project>
+          data={projects}
+          title="Projects"
+          addNewItem={addProject}
+          defaultNewItem={{
+            title: '',
+            description: '',
+            status: 'todo',
+            priority: 'medium',
+            progress: 0,
+            dueDate: null
+          }}
+          renderContent={(project) => (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{project.title}</h3>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    project.status === 'completed' 
+                      ? 'bg-green-100 text-green-800' 
+                      : project.status === 'in_progress'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {project.status === 'in_progress' ? 'In Progress' : project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    project.priority === 'critical'
+                      ? 'bg-red-100 text-red-800'
+                      : project.priority === 'high'
+                      ? 'bg-orange-100 text-orange-800'
+                      : project.priority === 'medium'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-gray-600">{project.description}</p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Progress</span>
+                  <span>{project.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{ width: `${project.progress}%` }}
+                  />
+                </div>
+              </div>
+              {project.dueDate && (
+                <div className="text-sm text-gray-500">
+                  Due: {new Date(project.dueDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          )}
+          actions={[
+            {
+              label: 'Mark In Progress',
+              action: async (project) => {
+                await updateProject(project.id, { status: 'in_progress' });
+                fetchProjects();
+              }
+            },
+            {
+              label: 'Update Progress',
+              action: async (project) => {
+                const newProgress = Math.min(100, (project.progress || 0) + 10);
+                await updateProject(project.id, { progress: newProgress });
+                fetchProjects();
+              }
+            },
+            {
+              label: 'Delete',
+              action: async (project) => {
+                await deleteProject(project.id);
+                fetchProjects();
+              },
+              variant: 'destructive'
+            }
+          ]}
+        />
+      )
+    },
+    {
+      title: 'Objectives',
+      content: (
+        <CardControlGroup<Objective>
+          data={objectives}
+          title="Objectives"
+          addNewItem={addObjective}
+          defaultNewItem={{
+            title: '',
+            description: '',
+            status: 'todo',
+            priority: 'medium',
+            progress: 0,
+            dueDate: null
+          }}
+          renderContent={(objective) => (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{objective.title}</h3>
+                <div className="flex items-center gap-2">
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    objective.status === 'completed' 
+                      ? 'bg-green-100 text-green-800' 
+                      : objective.status === 'in_progress'
+                      ? 'bg-blue-100 text-blue-800'
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {objective.status === 'in_progress' ? 'In Progress' : objective.status.charAt(0).toUpperCase() + objective.status.slice(1)}
+                  </span>
+                  <span className={`px-2 py-1 rounded-full text-sm ${
+                    objective.priority === 'critical'
+                      ? 'bg-red-100 text-red-800'
+                      : objective.priority === 'high'
+                      ? 'bg-orange-100 text-orange-800'
+                      : objective.priority === 'medium'
+                      ? 'bg-yellow-100 text-yellow-800'
+                      : 'bg-green-100 text-green-800'
+                  }`}>
+                    {objective.priority.charAt(0).toUpperCase() + objective.priority.slice(1)}
+                  </span>
+                </div>
+              </div>
+              <p className="text-gray-600">{objective.description}</p>
+              <div className="space-y-1">
+                <div className="flex justify-between text-sm text-gray-600">
+                  <span>Progress</span>
+                  <span>{objective.progress}%</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full"
+                    style={{ width: `${objective.progress}%` }}
+                  />
+                </div>
+              </div>
+              {objective.dueDate && (
+                <div className="text-sm text-gray-500">
+                  Due: {new Date(objective.dueDate).toLocaleDateString()}
+                </div>
+              )}
+            </div>
+          )}
+          actions={[
+            {
+              label: 'Mark In Progress',
+              action: async (objective) => {
+                await updateObjective(objective.id, { status: 'in_progress' });
+                fetchObjectives();
+              }
+            },
+            {
+              label: 'Update Progress',
+              action: async (objective) => {
+                const newProgress = Math.min(100, (objective.progress || 0) + 10);
+                await updateObjective(objective.id, { progress: newProgress });
+                fetchObjectives();
+              }
+            },
+            {
+              label: 'Delete',
+              action: async (objective) => {
+                await deleteObjective(objective.id);
+                fetchObjectives();
+              },
+              variant: 'destructive'
+            }
+          ]}
+        />
+      )
+    },
+    {
+      title: 'Tasks',
+      content: (
+        <CardControlGroup<Task>
+          data={tasks}
+          title="Tasks"
+          addNewItem={addTask}
+          defaultNewItem={{
+            title: '',
+            description: '',
+            status: 'todo'
+          }}
+          renderContent={(task) => (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold">{task.title}</h3>
+                <span className={`px-2 py-1 rounded-full text-sm ${
+                  task.status === 'completed' 
+                    ? 'bg-green-100 text-green-800' 
+                    : task.status === 'in_progress'
+                    ? 'bg-blue-100 text-blue-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {task.status === 'in_progress' ? 'In Progress' : task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+                </span>
+              </div>
+              <p className="text-gray-600">{task.description}</p>
+              <div className="text-sm text-gray-500">
+                Last updated: {new Date(task.updatedAt).toLocaleDateString()}
+              </div>
+            </div>
+          )}
+          actions={[
+            {
+              label: 'Mark In Progress',
+              action: async (task) => {
+                await updateTask(task.id, { status: 'in_progress' });
+                fetchTasks();
+              }
+            },
+            {
+              label: 'Mark Complete',
+              action: async (task) => {
+                await updateTask(task.id, { status: 'completed' });
+                fetchTasks();
+              }
+            },
+            {
+              label: 'Delete',
+              action: async (task) => {
+                await deleteTask(task.id);
+                fetchTasks();
+              },
+              variant: 'destructive'
+            }
+          ]}
+        />
+      )
+    }
+  ];
+
+  return <BaseDashboard header={header} sections={sections} />;
 }
 
 export default DashboardLayout;
