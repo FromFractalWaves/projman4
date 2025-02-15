@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
-import { DateSelector } from '@/components/BaseTableSystem/DateSelector';
+import { DateSelector } from '@/components/base/BaseTableSystem/DateSelector';
 import { Task, TaskInput } from '@/types/tasks';
 import { Project, ProjectInput } from '@/types/projects';
 import { Objective, ObjectiveInput } from '@/types/objectives';
