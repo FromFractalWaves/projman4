@@ -27,6 +27,24 @@ import { createDashboardStats } from '../shared/statsConfig';
 
 type ViewMode = 'table' | 'card';
 
+interface DashboardSection {
+  title: string;
+  content: React.ReactNode;
+}
+
+// Extend BaseDashboardProps to include stats
+interface ExtendedBaseDashboardProps {
+  header: React.ReactNode;
+  sections: DashboardSection[];
+  stats?: Array<{
+    title: string;
+    total: number;
+    active: number;
+    icon: React.ReactNode;
+    color: string;
+  }>;
+}
+
 export function DashboardLayout() {
   // Entity store hooks
   const { 
@@ -126,8 +144,9 @@ export function DashboardLayout() {
         <BaseCardGrid
           items={projects}
           renderContent={renderProject}
-          title="Projects"
+          cardTitle="Project"
           actions={createProjectActions(updateProject, deleteProject, fetchProjects)}
+          gridClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
         />
       ) : (
         <BaseTable
@@ -143,6 +162,8 @@ export function DashboardLayout() {
           actions={createProjectActions(updateProject, deleteProject, fetchProjects)}
           title="Projects"
           defaultNewItem={defaultProject}
+          isLoading={projectsLoading}
+          error={projectsError}
         />
       )
     },
@@ -152,8 +173,9 @@ export function DashboardLayout() {
         <BaseCardGrid
           items={objectives}
           renderContent={renderObjective}
-          title="Objectives"
+          cardTitle="Objective"
           actions={createObjectiveActions(updateObjective, deleteObjective, fetchObjectives)}
+          gridClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
         />
       ) : (
         <BaseTable
@@ -169,6 +191,8 @@ export function DashboardLayout() {
           actions={createObjectiveActions(updateObjective, deleteObjective, fetchObjectives)}
           title="Objectives"
           defaultNewItem={defaultObjective}
+          isLoading={objectivesLoading}
+          error={objectivesError}
         />
       )
     },
@@ -178,8 +202,9 @@ export function DashboardLayout() {
         <BaseCardGrid
           items={tasks}
           renderContent={renderTask}
-          title="Tasks"
+          cardTitle="Task"
           actions={createTaskActions(updateTask, deleteTask, fetchTasks)}
+          gridClassName="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4"
         />
       ) : (
         <BaseTable
@@ -192,6 +217,8 @@ export function DashboardLayout() {
           actions={createTaskActions(updateTask, deleteTask, fetchTasks)}
           title="Tasks"
           defaultNewItem={defaultTask}
+          isLoading={tasksLoading}
+          error={tasksError}
         />
       )
     }
