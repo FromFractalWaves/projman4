@@ -11,7 +11,7 @@ import { Project } from '@/types/projects';
 import { Objective } from '@/types/objectives';
 import { Task } from '@/types/tasks';
 import { ActionConfig } from '@/types/BaseCardTypes';
-import { DashboardHeader } from './DashboardHeader';
+import { DashboardHeader } from '@/components/dashboard/DashboardLayout/DashboardHeader';
 import { TaskInput } from '@/types/tasks';
 import { ProjectInput } from '@/types/projects';
 import { ObjectiveInput } from '@/types/objectives';
