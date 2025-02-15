@@ -1,26 +1,16 @@
-import { BaseItem } from './BaseTableTypes';
+// types/projects.ts
+import { BaseDataItem, BasePrioritizedInput, Status, Priority } from './base';
 
-export type Status = 'todo' | 'in_progress' | 'completed';
-export type Priority = 'low' | 'medium' | 'high' | 'critical';
-
-export interface Project extends BaseItem {
-  title: string;
-  description: string;
+export interface Project extends BaseDataItem {
   status: Status;
-  dueDate: Date | null;
   priority: Priority;
   progress: number;
+  dueDate: Date | null;
 }
 
-// Input type for creating/updating projects without system fields
-export type ProjectInput = Omit<Project, 'id' | 'createdAt' | 'updatedAt'>;
-
-// Default values for a new project
-export const DEFAULT_PROJECT: ProjectInput = {
-  title: '',
-  description: '',
-  status: 'todo',
-  priority: 'medium',
-  progress: 0,
-  dueDate: null,
-};
+export interface ProjectInput extends BasePrioritizedInput {
+  status?: Status;
+  priority?: Priority;
+  progress?: number;
+  dueDate?: Date | null;
+}

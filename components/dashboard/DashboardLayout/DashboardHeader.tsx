@@ -1,25 +1,39 @@
-// components/dashboard/DashboardHeader.tsx
-// 'use client';
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
+import { Plus, LayoutGrid, Table } from 'lucide-react';
 import { DateSelector } from '@/components/base/BaseTableSystem/DateSelector';
 import { TaskInput } from '@/types/tasks';
 import { ProjectInput } from '@/types/projects';
 import { ObjectiveInput } from '@/types/objectives';
 
+type ViewMode = 'table' | 'card';
+type EntityType = 'task' | 'project' | 'objective';
+
+interface ViewModes {
+  tasks: ViewMode;
+  projects: ViewMode;
+  objectives: ViewMode;
+}
+
 interface DashboardHeaderProps {
   onAddTask: (task: TaskInput) => Promise<void>;
   onAddProject: (project: ProjectInput) => Promise<void>;
   onAddObjective: (objective: ObjectiveInput) => Promise<void>;
+  viewModes: ViewModes;
+  onToggleView: (entityType: keyof ViewModes) => void;
 }
 
-export function DashboardHeader({ onAddTask, onAddProject, onAddObjective }: DashboardHeaderProps) {
-  const [isAdding, setIsAdding] = React.useState<'task' | 'project' | 'objective' | null>(null);
+export function DashboardHeader({ 
+  onAddTask, 
+  onAddProject, 
+  onAddObjective,
+  viewModes,
+  onToggleView
+}: DashboardHeaderProps) {
+  const [isAdding, setIsAdding] = React.useState<EntityType | null>(null);
   const [form, setForm] = React.useState<any>({});
   const [dates, setDates] = React.useState({
     startOn: { label: 'Start On', value: null, enabled: false },
@@ -36,9 +50,8 @@ export function DashboardHeader({ onAddTask, onAddProject, onAddObjective }: Das
         value: updates.enabled === false ? null : (updates.value ?? prev[key].value),
       },
     }));
-    // Merge date into form if needed (for project/objective)
     if (isAdding === 'project' || isAdding === 'objective') {
-      setForm((prev: any) => ({ ...prev, [key]: updates.enabled ? updates.value || null : null }));
+      setForm(prev => ({ ...prev, [key]: updates.enabled ? updates.value || null : null }));
     }
   };
 
@@ -103,28 +116,52 @@ export function DashboardHeader({ onAddTask, onAddProject, onAddObjective }: Das
     );
   };
 
+  // Helper function to get the view toggle button text and icon
+  const getViewToggleProps = (entityType: keyof ViewModes) => {
+    const isCardView = viewModes[entityType] === 'card';
+    return {
+      icon: isCardView ? <Table className="w-4 h-4 mr-2" /> : <LayoutGrid className="w-4 h-4 mr-2" />,
+      text: `View as ${isCardView ? 'Table' : 'Cards'}`
+    };
+  };
+
   return (
-    <div className="flex gap-4 mb-6">
-      <Button onClick={() => { setIsAdding('task'); setForm({ status: 'todo' }); }} size="sm">
-        <Plus className="w-4 h-4 mr-2" />
-        New Task
-      </Button>
-      <Button onClick={() => { setIsAdding('project'); setForm({ status: 'todo', priority: 'medium', progress: 0 }); }} size="sm">
-        <Plus className="w-4 h-4 mr-2" />
-        New Project
-      </Button>
-      <Button onClick={() => { setIsAdding('objective'); setForm({ status: 'todo', priority: 'medium', progress: 0 }); }} size="sm">
-        <Plus className="w-4 h-4 mr-2" />
-        New Objective
-      </Button>
+    <div className="flex flex-col gap-4 mb-6">
+      {/* Entity type sections */}
+      {(['tasks', 'projects', 'objectives'] as const).map(entityType => (
+        <div key={entityType} className="flex items-center justify-between border-b pb-2">
+          <h2 className="text-lg font-semibold capitalize">{entityType}</h2>
+          <div className="flex gap-2">
+            <Button 
+              onClick={() => onToggleView(entityType)} 
+              size="sm"
+              variant="outline"
+            >
+              {getViewToggleProps(entityType).icon}
+              {getViewToggleProps(entityType).text}
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAdding(entityType.slice(0, -1) as EntityType);
+                setForm({ 
+                  status: 'todo',
+                  ...(entityType !== 'tasks' && { priority: 'medium', progress: 0 })
+                });
+              }} 
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add {entityType.slice(0, -1)}
+            </Button>
+          </div>
+        </div>
+      ))}
 
       <Dialog open={!!isAdding} onOpenChange={(open) => !open && setIsAdding(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {isAdding === 'task' && 'Add New Task'}
-              {isAdding === 'project' && 'Add New Project'}
-              {isAdding === 'objective' && 'Add New Objective'}
+              Add New {isAdding && isAdding.charAt(0).toUpperCase() + isAdding.slice(1)}
             </DialogTitle>
           </DialogHeader>
           {renderFormFields()}

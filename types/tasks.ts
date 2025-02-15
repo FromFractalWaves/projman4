@@ -1,17 +1,10 @@
-import { BaseItem } from './BaseTableTypes';
+// types/tasks.ts
+import { BaseDataItem, BaseInput, Status } from './base';
 
-export type Status = 'todo' | 'in_progress' | 'completed';
-
-export interface Task extends BaseItem {
-  title: string;
-  description: string;
+export interface Task extends BaseDataItem {
   status: Status;
 }
 
-export type TaskInput = Omit<Task, 'id' | 'createdAt' | 'updatedAt'>;
-
-export const DEFAULT_TASK: TaskInput = {
-  title: '',
-  description: '',
-  status: 'todo',
-};
+export interface TaskInput extends BaseInput {
+  status?: Status;
+}
