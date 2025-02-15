@@ -1,19 +1,26 @@
-'use client';
+'use client'
 
-import React, { useEffect } from 'react';
-import { TaskTable } from '@/components/TaskTable/TaskTable';
-import { useTaskStore } from '@/store/taskStore';
+import { DashboardLayout } from '@/components/dashboard/DashboardLayout/DashboardLayout';
+import { DashboardStats } from '@/components/dashboard/DashboardStats/DashboardStats';
+import { DashboardProjects } from '@/components/dashboard/DashboardProjects/DashboardProjects';
+import { DashboardObjectives } from '@/components/dashboard/DashboardObjectives/DashboardObjectives';
+import { DashboardTasks } from '@/components/dashboard/DashboardTasks/DashboardTasks';
 
-export default function TasksPage() {
-  const { fetchTasks } = useTaskStore();
-
-  useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
-
+export default function DashboardPage() {
   return (
-    <div className="container mx-auto py-10">
-      <TaskTable />
-    </div>
+    <DashboardLayout>
+      <DashboardStats />
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="md:col-span-2 lg:col-span-3">
+          <DashboardProjects />
+        </div>
+        <div className="md:col-span-2 lg:col-span-2">
+          <DashboardObjectives />
+        </div>
+        <div className="md:col-span-2 lg:col-span-1">
+          <DashboardTasks />
+        </div>
+      </div>
+    </DashboardLayout>
   );
 }
