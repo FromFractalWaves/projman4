@@ -1,1 +1,0 @@
-we will definatly use collapsable to show the contents of other types in the card for a type item.
