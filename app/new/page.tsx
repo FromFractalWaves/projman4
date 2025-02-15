@@ -1,7 +1,7 @@
 'use client';
 
-import { DashboardLayout } from '@/components/dashboard/DashboardLayout/DashboardLayout';
+import { EnhancedDashboard } from '@/components/dashboard/EnhancedDashboard/EnhancedDashboard';
 
-export default function DashboardPage() {
-  return <DashboardLayout />;
+export default function EnhancedDashboardPage() {
+  return <EnhancedDashboard />;
 }
