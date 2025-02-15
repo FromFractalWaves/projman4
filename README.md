@@ -1,65 +1,59 @@
 # Project Management Dashboard
 
-A modern, responsive project management dashboard built with Next.js 14, React, TypeScript, and Tailwind CSS. This application provides a comprehensive system for managing projects, objectives, and tasks with a focus on reusability and maintainability.
+A modern, responsive project management dashboard built with Next.js 14, React, TypeScript, and Tailwind CSS. This application provides a comprehensive system for managing projects, objectives, and tasks with a focus on reusability and component-based architecture.
 
 ## Features
 
 ### Core Functionality
-- **Project Management**: Create, update, and track projects with priorities, progress, and due dates
-- **Objective Tracking**: Set and monitor objectives with progress tracking and priority levels
-- **Task Management**: Manage day-to-day tasks with status updates and descriptions
-- **Dashboard Overview**: Get instant insights into active projects, objectives, and tasks
+- **Project Management**: Track projects with status (todo, in progress, completed), priority levels, progress tracking, and due dates
+- **Objective Tracking**: Set and monitor objectives with similar tracking capabilities as projects
+- **Task Management**: Simple task tracking with status updates and descriptions
+- **Dashboard Overview**: Unified view of high-priority projects, in-progress objectives, and recent tasks
 
 ### Technical Features
 - **Reusable Component Systems**
-  - BaseCard System for card-based layouts
-  - BaseTable System for tabular data presentation
-  - Shared action management system
+  - BaseCard System for card-based layouts with action popovers
+  - BaseTable System for tabular data with built-in date handling
+  - DataTable system for simpler table views
   - Unified date selection component
   
 - **Modern Architecture**
   - Type-safe development with TypeScript
-  - Server and client components with Next.js 14
+  - Client-side components with Next.js 14
   - Global state management using Zustand
   - PostgreSQL database with Prisma ORM
   - RESTful API endpoints
 
 - **UI/UX**
-  - Responsive design for all screen sizes
-  - Modern UI components from shadcn/ui
+  - Responsive design with Tailwind CSS
+  - shadcn/ui component library integration
   - Interactive dialogs and popovers
   - Progress tracking visualizations
-  - Status and priority indicators
+  - Status and priority indicators with color coding
 
 ## Technology Stack
 
 ### Frontend
 - Next.js 14
-- React
+- React (with client components)
 - TypeScript
 - Tailwind CSS
-- Zustand (State Management)
+- Zustand for state management
 - shadcn/ui Components
-- Lucide Icons
+- Lucide React Icons
 
 ### Backend
 - Next.js API Routes
 - PostgreSQL
 - Prisma ORM
 
-### Development Tools
-- ESLint
-- Prettier
-- PostCSS
-- TypeScript
-
 ## Architecture
 
 ### Component Structure
 - **Base Systems**
-  - BaseCardSystem: Reusable card components with actions
-  - BaseTableSystem: Flexible table system with sorting and actions
-  - DataTableControlGroup: Enhanced table controls
+  - BaseCardSystem: Card components with action popovers
+  - BaseTableSystem: Table system with date handling and actions
+  - DataTableControlGroup: Simplified table components
 
 - **Feature Components**
   - Project Components (Cards & Tables)
@@ -67,101 +61,91 @@ A modern, responsive project management dashboard built with Next.js 14, React, 
   - Task Components (Cards & Tables)
 
 - **Dashboard Components**
-  - DashboardLayout
-  - DashboardStats
-  - DashboardHeader
-  - Feature-specific sections
+  - DashboardLayout: Main layout component
+  - DashboardStats: Overview statistics
+  - DashboardProjects: High-priority projects section
+  - DashboardObjectives: In-progress objectives section
+  - DashboardTasks: Recent tasks section
 
-### Data Flow
-1. User interactions trigger store actions
-2. Store updates are processed through API endpoints
-3. Database changes are reflected back to the UI
-4. Real-time updates maintain UI/database consistency
+### Data Models
 
-## Key Design Patterns
+#### Project & Objective
+- id: String (cuid)
+- title: String
+- description: String
+- status: Enum (todo, in_progress, completed)
+- priority: Enum (low, medium, high, critical)
+- progress: Integer
+- dueDate: DateTime (optional)
+- createdAt: DateTime
+- updatedAt: DateTime
 
-### Component Composition
-- Higher-order components for shared functionality
-- Render props for flexible content rendering
-- Custom hooks for shared logic
+#### Task
+- id: String (cuid)
+- title: String
+- description: String
+- status: Enum (todo, in_progress, completed)
+- createdAt: DateTime
+- updatedAt: DateTime
 
 ### State Management
-- Centralized stores for each entity type
-- Async action handling with loading states
-- Error boundary implementation
-- Optimistic updates for better UX
+- Separate Zustand stores for projects, objectives, and tasks
+- CRUD operations with loading states and error handling
+- Automatic refetching after updates
 
-### Type Safety
-- Shared type definitions
-- Generic components for type flexibility
-- Strong typing for API responses
-- Runtime type checking where necessary
+## Project Structure
+```
+├── app/
+│   ├── api/              # API routes for CRUD operations
+│   │   ├── objectives/
+│   │   ├── projects/
+│   │   └── tasks/
+├── components/
+│   ├── BaseCardSystem/   # Reusable card components
+│   ├── BaseTableSystem/  # Table components with date handling
+│   ├── DataTableControlGroup/  # Simplified tables
+│   ├── ObjectiveCards/   # Objective-specific cards
+│   ├── ProjectCards/     # Project-specific cards
+│   ├── TaskCards/        # Task-specific cards
+│   ├── dashboard/        # Dashboard components
+│   └── ui/              # shadcn/ui components
+├── prisma/              # Database schema and migrations
+├── store/              # Zustand state management
+└── types/              # TypeScript type definitions
+```
 
 ## Getting Started
 
-1. Clone the repository
+1. Clone the repository and install dependencies
 ```bash
 git clone [repository-url]
 cd [project-directory]
-```
-
-2. Install dependencies
-```bash
 pnpm install
 ```
 
-3. Set up the database
+2. Set up the database
 ```bash
-# Update .env with your database connection
+# Set up your PostgreSQL database
+# Update .env with your database connection string
 pnpm prisma migrate dev
 ```
 
-4. Run the development server
+3. Run the development server
 ```bash
 pnpm dev
 ```
 
-## Project Structure
-```
-├── app/              # Next.js app directory
-│   ├── api/         # API routes
-│   └── page.tsx     # Main dashboard page
-├── components/       # React components
-│   ├── BaseCardSystem/
-│   ├── BaseTableSystem/
-│   ├── DataTableControlGroup/
-│   └── ui/          # Shared UI components
-├── prisma/          # Database schema and migrations
-├── store/           # Zustand stores
-└── types/           # TypeScript types
-```
-
 ## Future Enhancements
 
-- [ ] Dark mode support
+- [ ] Authentication and authorization
 - [ ] Advanced filtering and search
-- [ ] Export functionality
-- [ ] Team collaboration features
-- [ ] Timeline views
-- [ ] Analytics dashboard
-- [ ] Mobile app version
-- [ ] Integration with external tools
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a pull request
+- [ ] Project/Objective relationships
+- [ ] File attachments
+- [ ] Team member assignments
+- [ ] Activity logs and notifications
+- [ ] Resource allocation tracking
+- [ ] Extended date handling (start dates, deadlines)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgments
-
-- shadcn/ui for the component library
-- Vercel for Next.js
-- Prisma team for the ORM
-- TanStack team for table utilities
+This project is licensed under the MIT License.
