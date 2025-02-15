@@ -11,6 +11,10 @@ import { Project } from '@/types/projects';
 import { Objective } from '@/types/objectives';
 import { Task } from '@/types/tasks';
 import { ActionConfig } from '@/types/BaseCardTypes';
+import { DashboardHeader } from './DashboardHeader';
+import { TaskInput } from '@/types/tasks';
+import { ProjectInput } from '@/types/projects';
+import { ObjectiveInput } from '@/types/objectives';
 
 interface DashboardLayoutProps {
   children?: React.ReactNode;
@@ -34,6 +38,33 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const isLoading = tasksLoading || projectsLoading || objectivesLoading;
   const hasError = tasksError || projectsError || objectivesError;
+
+  const handleAddTask = async (task: TaskInput) => {
+    try {
+      await addTask(task);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error adding task:', error);
+    }
+  };
+  
+  const handleAddProject = async (project: ProjectInput) => {
+    try {
+      await addProject(project);
+      fetchProjects();
+    } catch (error) {
+      console.error('Error adding project:', error);
+    }
+  };
+  
+  const handleAddObjective = async (objective: ObjectiveInput) => {
+    try {
+      await addObjective(objective);
+      fetchObjectives();
+    } catch (error) {
+      console.error('Error adding objective:', error);
+    }
+  };
 
   // Stats data
   const stats = [
@@ -210,6 +241,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="container mx-auto py-6 px-4">
+      <DashboardHeader 
+        onAddTask={handleAddTask}
+        onAddProject={handleAddProject}
+        onAddObjective={handleAddObjective}
+      />
       <div className="grid gap-6">
         {/* Stats Section */}
         <div className="grid gap-4 md:grid-cols-3">
