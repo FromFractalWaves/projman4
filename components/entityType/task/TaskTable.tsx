@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseTable } from '@/components/BaseTableSystem/BaseTable';
+import { BaseTable } from '@/components/base/BaseTableSystem/BaseTable';
 import { useTaskStore } from '@/store/taskStore';
 import { Task } from '@/types/tasks';
 import { useEffect } from 'react';

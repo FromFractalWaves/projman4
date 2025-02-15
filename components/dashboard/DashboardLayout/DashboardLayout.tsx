@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProjectCard } from '@/components/ProjectCards/ProjectCards';
-import { ObjectiveCard } from '@/components/ObjectiveCards/Objectivecards';
-import { TaskCard } from '@/components/TaskCards/TaskCards';
+import { ProjectCard } from '@/components/entityType/project/ProjectCards';
+import { ObjectiveCard } from '@/components/entityType/objective/Objectivecards';
+import { TaskCard } from '@/components/entityType/task/TaskCards';
 import { useTaskStore } from '@/store/taskStore';
 import { useProjectStore } from '@/store/projectStore';
 import { useObjectiveStore } from '@/store/objectiveStore';

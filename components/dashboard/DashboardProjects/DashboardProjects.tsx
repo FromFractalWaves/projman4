@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ProjectCard } from '@/components/ProjectCards/ProjectCards';
+import { ProjectCard } from '@/components/entityType/project/ProjectCards';
 import { useProjectStore } from '@/store/projectStore';
 import { Project, Priority } from '@/types/projects';
 import { ActionConfig } from '@/types/BaseCardTypes';

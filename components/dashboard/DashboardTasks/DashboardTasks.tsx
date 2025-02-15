@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TaskCard } from '@/components/TaskCards/TaskCards';
+import { TaskCard } from '@/components/entityType/task/TaskCards';
 import { useTaskStore } from '@/store/taskStore';
 import { Task } from '@/types/tasks';
 import { Loader2 } from 'lucide-react';

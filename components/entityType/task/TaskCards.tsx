@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react';
-import { BaseCard } from '@/components/BaseCardSystem/BaseCard';
+import { BaseCard } from '@/components/base/BaseCardSystem/BaseCard';
 import { Task } from '@/types/tasks';
 import { ActionConfig } from '@/types/BaseCardTypes';
 

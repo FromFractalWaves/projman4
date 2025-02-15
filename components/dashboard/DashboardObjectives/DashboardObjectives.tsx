@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ObjectiveCard } from '@/components/ObjectiveCards/Objectivecards';
+import { ObjectiveCard } from '@/components/entityType/objective/Objectivecards';
 import { useObjectiveStore } from '@/store/objectiveStore';
 import { Objective } from '@/types/objectives';
 import { Loader2 } from 'lucide-react';
